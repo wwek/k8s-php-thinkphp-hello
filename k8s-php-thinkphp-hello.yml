@@ -1,0 +1,102 @@
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-php-thinkphp-hello
+  labels:
+    app: k8s-php-thinkphp-hello
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: k8s-php-thinkphp-hello
+---
+# deployment
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: k8s-php-thinkphp-hello
+  labels:
+    app: k8s-php-thinkphp-hello
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-php-thinkphp-hello
+  template:
+    metadata:
+      labels:
+        app: k8s-php-thinkphp-hello
+    spec:
+    #做一个emptyDir类型，名为wwwroot的volume 用于多个容器共享同一个挂载
+      volumes:
+      - name: wwwroot
+        emptyDir: {}
+      # 私有docker 镜像仓库
+      # imagePullSecrets:
+      # - name: registrykey-qlcoud-1
+      # 自定义设置POD的hosts
+      hostAliases:
+      - ip: "127.0.0.1"
+        hostnames:
+        - "php-fpm"
+      initContainers:
+       #php程序本身
+        - name: appphp
+          image: "wwek/k8s-php-thinkphp-hello:app-v1"
+          imagePullPolicy: Always
+          # 复制php程序文件到wwwroot volume
+          command: ["sh", "-c", "cp -r /var/www/k8s-php-thinkphp-hello /appdata"]
+          volumeMounts:
+          - mountPath: /appdata
+            name: wwwroot
+      containers:
+       #php-fpm php运行环境
+        - name: php-fpm
+          image: "wwek/k8s-php-thinkphp-hello:php-fpm-7.2"
+          imagePullPolicy: Always
+          volumeMounts:
+          - mountPath: /var/www
+            name: wwwroot
+      #openrsty webserver
+        - name: openresty
+          image: "wwek/k8s-php-thinkphp-hello:openresty"
+          imagePullPolicy: Always
+          volumeMounts:
+          - mountPath: /var/www
+            name: wwwroot
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {}
+---
+# Ingress
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: k8s-php-thinkphp-hello
+  labels:
+    app: k8s-php-thinkphp-hello
+spec:
+  rules:
+    - host: k8sphpthinkphp.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: k8s-php-thinkphp-hello
+              servicePort: http

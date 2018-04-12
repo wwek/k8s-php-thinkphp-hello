@@ -1,0 +1,65 @@
+version: '2'
+
+services:
+
+### Applications Code Container #############################
+
+    appphp:
+      image: wwek/k8s-php-thinkphp-hello:app-v1
+      build:
+        context: ./appphp
+        dockerfile: "Dockerfile"
+
+### PHP-FPM Container #######################################
+
+    php-fpm:
+      image: wwek/k8s-php-thinkphp-hello:php-fpm-7.2
+      build:
+        context: ./php-fpm
+        dockerfile: "Dockerfile"
+      volumes_from:
+        - appphp
+      environment:
+        - RUN_MODE=prd
+        - MYSQL_HOSTNAME= \
+        - MYSQL_USERNAME= \
+        - MYSQL_PASSWORD= 
+      depends_on:
+        - appphp
+      expose:
+        - "9000"
+      networks:
+        - backend
+
+### OPENRESTY Server Container ##################################
+
+    openresty:
+      image: wwek/k8s-php-thinkphp-hello:openresty
+      build:
+        context: ./openresty
+        dockerfile: "Dockerfile"
+      volumes_from:
+        - appphp
+      ports:
+        - "80:80"
+        - "443:443"
+      depends_on:
+        - php-fpm
+      networks:
+        - frontend
+        - backend
+
+### Networks Setup ############################################
+
+networks:
+  frontend:
+    driver: "bridge"
+  backend:
+    driver: "bridge"
+
+### Volumes Setup #############################################
+
+volumes:
+  redis:
+    driver: "local"
+
