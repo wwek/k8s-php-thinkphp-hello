@@ -1,20 +1,21 @@
 # k8s-php-thinkphp-hello
-一个PHP项目ThinkPHP框架用kubernets（k8s）部署和docker-compose部署的示例
-dockerfile https://github.com/wwek/k8s-php-thinkphp-hello
-docker iamges https://hub.docker.com/r/wwek/k8s-php-thinkphp-hello/
+一个以php框架thinkphp的php项目，在kubernets（k8s）部署或docker-compose部署的范例
+dockerfile 和 yaml文件 https://github.com/wwek/k8s-php-thinkphp-hello
+docker iamges仓库 https://hub.docker.com/r/wwek/k8s-php-thinkphp-hello/
 
 ## kubernets（k8s）部署运行
 ```
 kubectl apply -f k8s-php-thinkphp-hello.yml
-kubectl get svc |grep k8s-php-thinkphp-hello
+kubectl get pods |grep k8s-php-thinkphp-hello
+kubectl get service |grep k8s-php-thinkphp-hello
+kubectl get ingress |grep k8s-php-thinkphp-hello
 ```
+把k8sphpthinkphp.com hosts解析到Ingress 的ip
+然后浏览器
+访问  http://k8sphpthinkphp.com/ 可以看到thinkphp的欢迎页面
+访问  http://k8sphpthinkphp.com/phpinfo.php 可以看到phpinfo信息
 
-浏览器访问
-http://k8snode:nodeport/
-http://k8snode:nodeport/phpinfo.php
-
-如果有Ingress那么把k8sphpthinkphp.com hosts解析到Ingress 的ip
-然后通过 http://k8sphpthinkphp.com/  http://k8sphpthinkphp.com/phpinfo.php 访问
+如果没有ingress请自行修改service的type为 NodePort 使用节点的ip和端口访问
 
 ## docker-compose部署运行
 
@@ -27,13 +28,13 @@ docker-compose up -d
 ```
 docker-compose up -d --build
 ```
-浏览器访问
-http://127.0.0.1
-http://127.0.0.1/phpinfo.php
+浏览器
+访问 http://127.0.0.1
+访问 http://127.0.0.1/phpinfo.php
 
 
 ## 特性
-* 支持docker-compose部署
-* 支持kubernets部署
-* 以PHP框架thinkphp为例
-* 多容器方式，php代码，openresty（nginx），php-fpm 3容器方式
+* 组织的容器支持docker-compose部署
+* 组织的容器支持kubernets部署
+* 以php框架thinkphp为示例，演示php项目的kubernets部署
+* 多容器方式（3容器）分别为：appphp（php代码）、openresty（nginx webserver），php-fpm（php的运行环境）
