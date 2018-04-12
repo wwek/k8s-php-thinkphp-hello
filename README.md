@@ -1,5 +1,6 @@
 # k8s-php-thinkphp-hello
-一个以php框架thinkphp的php项目，在kubernets（k8s）部署或docker-compose部署的范例
+一个以php框架thinkphp的php项目，在kubernets上采用多容器在一个Pod的部署范例
+Docker镜像支持同时部署到kubernets或者docker-compose
 dockerfile 和 yaml文件 https://github.com/wwek/k8s-php-thinkphp-hello
 docker iamges仓库 https://hub.docker.com/r/wwek/k8s-php-thinkphp-hello/
 
